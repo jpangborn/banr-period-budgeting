@@ -138,12 +138,12 @@ CREATE OR REPLACE VIEW BANINST1.RZVPBGP AS
                messiah.mc_fa_util.get_adm_rec(rorstat_pidm, rortprd_period) AS adm_rec,
                messiah.mc_fa_util.get_aidy_adm_rec(rorstat_pidm, rorstat_aidy_code) AS aidy_adm_rec
         FROM rorstat
-        LEFT JOIN rortprd
+        INNER JOIN rortprd
           ON rorstat_aidy_code = rortprd_aidy_code
           AND rorstat_aprd_code = rortprd_aprd_code
-        LEFT JOIN rorprds
+        INNER JOIN rorprds
           ON rortprd_period = rorprds_period
-        LEFT JOIN robusdf
+        INNER JOIN robusdf
           ON rorstat_aidy_code = robusdf_aidy_code
           AND rorstat_pidm = robusdf_pidm
         LEFT OUTER JOIN rcrapp1
