@@ -4,6 +4,7 @@ CREATE OR REPLACE VIEW BANINST1.RZVPBGP AS
          rorstat_aprd_code AS rzvpbgp_aprd_code,
          rortprd_period AS rzvpbgp_period,
          rorprds_term_code AS rzvpbgp_term_code,
+         stvterm_start_date AS rzvpbgp_term_start_date,
          CASE
            WHEN adm_rec IS NOT NULL
              THEN 'A'
@@ -70,15 +71,15 @@ CREATE OR REPLACE VIEW BANINST1.RZVPBGP AS
          END AS rzvpbgp_admt_code,
          CASE
            WHEN adm_rec IS NOT NULL
-             THEN BANINST1.mc_fa_util.get_decision(rorstat_pidm,
-                                                   a.saradap_term_code_entry,
-                                                   a.saradap_appl_no)
+             THEN messiah.mc_fa_util.get_decision(rorstat_pidm,
+                                                  a.saradap_term_code_entry,
+                                                  a.saradap_appl_no)
            WHEN stu_rec IS NOT NULL AND aidy_adm_rec IS NOT NULL AND sgbstdn_term_code_eff >= b.saradap_term_code_entry
              THEN NULL
            WHEN aidy_adm_rec IS NOT NULL
-             THEN BANINST1.mc_fa_util.get_decision(rorstat_pidm,
-                                                   b.saradap_term_code_entry,
-                                                   b.saradap_appl_no)
+             THEN messiah.mc_fa_util.get_decision(rorstat_pidm,
+                                                  b.saradap_term_code_entry,
+                                                  b.saradap_appl_no)
            ELSE NULL
          END AS rzvpbgp_apdc_code,
          CASE
@@ -94,7 +95,7 @@ CREATE OR REPLACE VIEW BANINST1.RZVPBGP AS
          END AS rzvpbgp_stst_code,
          f_class_calc_fnc(rorstat_pidm, sgbstdn_levl_code, rorprds_term_code) AS rzvpbgp_clas_code,
          CASE
-           WHEN billing_hrs IS NULL
+           WHEN SYSDATE < stvterm_start_date
              THEN billing_hrs_override
            ELSE billing_hrs
          END AS rzvpbgp_billing_hrs,
@@ -108,41 +109,44 @@ CREATE OR REPLACE VIEW BANINST1.RZVPBGP AS
                rorstat_aprd_code,
                rortprd_period,
                rorprds_term_code,
+               stvterm_start_date,
                rcrapp1_inst_hous_cde,
                rokmisc_rules.f_calc_rule_hrs_no_rotsreg(rorstat_aidy_code,
-                                                        rorstat_pidm,
-                                                        rorprds_term_code,
-                                                        'STANDARD',
-                                                        'B') AS billing_hrs,
+                                                  rorstat_pidm,
+                                                  rorprds_term_code,
+                                                  'STANDARD',
+                                                  'B') AS billing_hrs,
                CASE
                  WHEN rortprd_period = '20' || (to_number(substr(rorstat_aidy_code, 0, 2)) - 1) || '30'
-                   THEN to_number(robusdf_value_85)
+                   THEN robusdf_value_85
                  WHEN rortprd_period = '20' || substr(rorstat_aidy_code, 0, 2) || '10'
-                   THEN to_number(robusdf_value_86)
+                   THEN robusdf_value_86
                  WHEN rortprd_period = '20' || substr(rorstat_aidy_code, 0, 2) || '20'
-                   THEN to_number(robusdf_value_87)
+                   THEN robusdf_value_87
                  WHEN rortprd_period = '20' || substr(rorstat_aidy_code, 0, 2) || '30'
-                   THEN to_number(robusdf_value_88)
-               END AS billing_hrs_override,
-               CASE
-                 WHEN rortprd_period = '20' || (to_number(substr(rorstat_aidy_code, 0, 2)) - 1) || '30'
-                   THEN robusdf_value_81
-                 WHEN rortprd_period = '20' || substr(rorstat_aidy_code, 0, 2) || '10'
-                   THEN robusdf_value_82
-                 WHEN rortprd_period = '20' || substr(rorstat_aidy_code, 0, 2) || '20'
-                   THEN robusdf_value_83
-                 WHEN rortprd_period = '20' || substr(rorstat_aidy_code, 0, 2) || '30'
-                   THEN robusdf_value_84
+                   THEN robusdf_value_88
                END AS housing_code_override,
-               BANINST1.mc_fa_util.get_stu_rec(rorstat_pidm, rortprd_period) AS stu_rec,
-               BANINST1.mc_fa_util.get_adm_rec(rorstat_pidm, rortprd_period) AS adm_rec,
-               BANINST1.mc_fa_util.get_aidy_adm_rec(rorstat_pidm, rorstat_aidy_code) AS aidy_adm_rec
+               CASE
+                 WHEN rortprd_period = '20' || (to_number(substr(rorstat_aidy_code, 0, 2)) - 1) || '30'
+                   THEN to_number(robusdf_value_81)
+                 WHEN rortprd_period = '20' || substr(rorstat_aidy_code, 0, 2) || '10'
+                   THEN to_number(robusdf_value_82)
+                 WHEN rortprd_period = '20' || substr(rorstat_aidy_code, 0, 2) || '20'
+                   THEN to_number(robusdf_value_83)
+                 WHEN rortprd_period = '20' || substr(rorstat_aidy_code, 0, 2) || '30'
+                   THEN to_number(robusdf_value_84)
+               END AS billing_hrs_override,
+               messiah.mc_fa_util.get_stu_rec(rorstat_pidm, rortprd_period) AS stu_rec,
+               messiah.mc_fa_util.get_adm_rec(rorstat_pidm, rortprd_period) AS adm_rec,
+               messiah.mc_fa_util.get_aidy_adm_rec(rorstat_pidm, rorstat_aidy_code) AS aidy_adm_rec
         FROM rorstat
         INNER JOIN rortprd
           ON rorstat_aidy_code = rortprd_aidy_code
           AND rorstat_aprd_code = rortprd_aprd_code
         INNER JOIN rorprds
           ON rortprd_period = rorprds_period
+        INNER JOIN stvterm
+          ON rorprds_term_code = stvterm_code
         INNER JOIN robusdf
           ON rorstat_aidy_code = robusdf_aidy_code
           AND rorstat_pidm = robusdf_pidm
