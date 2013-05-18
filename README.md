@@ -114,3 +114,11 @@ Return the undergraduate part-time tuition rate from RORALGS. Accepts Aid Year C
 #### get_ut_ov_tuit()
 
 Return the undergraduate overloaded tuition rate from RORALGS. Accepts Aid Year Code as a parameter.
+
+### Group Rules
+
+Example Period Budget Group Assignment Rules show methods of grouping students.
+
+### Algorithmic Rules
+
+Example Algorithmic Rules show methods of calculating various budget components, including looking up values from RORALGS, calculating amounts based on the number of credits a student is taking, calculating amounts based on the number of courses the student is taking, and others.
