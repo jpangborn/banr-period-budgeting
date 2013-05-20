@@ -1,4 +1,4 @@
-Banner and Algorithmic Period Budgeting
+Banner Period and Algorithmic Budgeting
 =======================================
 
 Views
